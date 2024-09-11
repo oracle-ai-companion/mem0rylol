@@ -1,8 +1,8 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="mem0rylol",
-    version="0.2.0",  # Incremented version number
+    version="0.2.1",  # Incremented version number
     packages=find_packages(exclude=["tests*"]),
     install_requires=[
         "langchain>=0.2.16",

@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
+
 from langchain.schema import LLMResult
+
 
 class BaseLLM(ABC):
     @abstractmethod

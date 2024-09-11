@@ -172,3 +172,5 @@ htmlcov/
 
 # Poetry
 poetry.lock
+
+config/

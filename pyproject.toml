@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mem0rylol"
-version = "0.2.0"
+version = "0.2.1"
 description = "A sophisticated AI memory layer."
 authors = ["toeknee"]
 license = "GNU"
@@ -30,8 +30,8 @@ bandit = "^1.7.5"
 Sphinx = "^7.2.0"
 sphinx-autobuild = "^2024.2.4"
 pre-commit = "^3.5.0"
-twine = "^4.0.2"
 tox = "^4.11.0"
+twine = "^5.1.1"
 
 [tool.black]
 line-length = 100

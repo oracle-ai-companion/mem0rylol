@@ -1,13 +1,13 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 project = "mem0rylol"
 copyright = "2023, toeknee"
 author = "toeknee"
 version = "0.2"
-release = "0.2.0"
+release = "0.2.1"
 
 extensions = [
     "sphinx.ext.autodoc",

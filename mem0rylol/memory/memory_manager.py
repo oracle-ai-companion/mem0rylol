@@ -1,19 +1,30 @@
-from typing import Optional, List, Type
+import uuid
+from typing import List, Optional, Type
+
 from langchain.schema import Document
+
 from mem0rylol.base.embeddings import BaseEmbeddings
 from mem0rylol.base.llms import BaseLLM
-from mem0rylol.config import settings
 from mem0rylol.base.vector_stores import BaseVectorStore
-from mem0rylol.schemas.base import BaseSchema
+from mem0rylol.config import settings
 from mem0rylol.memory.memory_types import Memory
-import uuid
+from mem0rylol.schemas.base import BaseSchema
+
 
 class MemoryManager:
     """
     @class MemoryManager
     @brief Manages the long-term and short-term memory for the AI application.
     """
-    def __init__(self, table_name: str, schema_cls: Type[BaseSchema], llm: Optional[BaseLLM] = None, embeddings: Optional[BaseEmbeddings] = None, vector_store: Optional[BaseVectorStore] = None):
+
+    def __init__(
+        self,
+        table_name: str,
+        schema_cls: Type[BaseSchema],
+        llm: Optional[BaseLLM] = None,
+        embeddings: Optional[BaseEmbeddings] = None,
+        vector_store: Optional[BaseVectorStore] = None,
+    ):
         """
         @brief Initialize the MemoryManager.
         @param table_name The name of the table to use for the memory vector store.
@@ -47,7 +58,9 @@ class MemoryManager:
         """
         return self.vector_store.similarity_search(self.table, query, k)
 
-    def max_marginal_relevance_search(self, query: str, k: int = 4, fetch_k: int = 20) -> List[Document]:
+    def max_marginal_relevance_search(
+        self, query: str, k: int = 4, fetch_k: int = 20
+    ) -> List[Document]:
         """
         @brief Perform a max marginal relevance search on the memory vector store.
         @param query The query to search for.
@@ -56,4 +69,3 @@ class MemoryManager:
         @return The list of Documents matching the query.
         """
         return self.vector_store.max_marginal_relevance_search(self.table, query, k, fetch_k)
-
