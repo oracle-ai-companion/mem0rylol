@@ -180,6 +180,12 @@ def test_base_embeddings():
     with pytest.raises(TypeError):
         BaseEmbeddings()
 
+    # Test abstract methods
+    with pytest.raises(NotImplementedError):
+        BaseEmbeddings.embed_documents(None, ["test"])
+    with pytest.raises(NotImplementedError):
+        BaseEmbeddings.embed_query(None, "test")
+
 def test_base_llm():
     class TestLLM(BaseLLM):
         def __call__(self, prompt: str, stop: Optional[List[str]] = None) -> str:
@@ -197,6 +203,12 @@ def test_base_llm():
 
     with pytest.raises(TypeError):
         BaseLLM()
+
+    # Test abstract methods
+    with pytest.raises(NotImplementedError):
+        BaseLLM.__call__(None, "test")
+    with pytest.raises(NotImplementedError):
+        BaseLLM.generate(None, ["test"])
 
 def test_base_vector_store():
     class TestVectorStore(BaseVectorStore):
@@ -221,4 +233,92 @@ def test_base_vector_store():
     with pytest.raises(TypeError):
         BaseVectorStore()
 
-# Add more tests as needed
+    # Test abstract methods
+    with pytest.raises(NotImplementedError):
+        BaseVectorStore.create_table(None, "test", {})
+    with pytest.raises(NotImplementedError):
+        BaseVectorStore.insert_data(None, "test", "data")
+    with pytest.raises(NotImplementedError):
+        BaseVectorStore.similarity_search(None, "test", "query")
+    with pytest.raises(NotImplementedError):
+        BaseVectorStore.max_marginal_relevance_search(None, "test", "query")
+
+def test_memory_vector_store_connection():
+    with patch('mem0rylol.vector_stores.lancedb.lancedb') as mock_lancedb:
+        mock_connection = Mock()
+        mock_lancedb.connect.return_value = mock_connection
+
+        # Test HTTP connection
+        with patch('mem0rylol.vector_stores.lancedb.settings') as mock_settings:
+            mock_settings.LANCEDB_CONNECTION_STRING = "http://example.com"
+            vector_store = MemoryVectorStore(Mock())
+            assert vector_store.connection == mock_connection
+
+        # Test local connection
+        with patch('mem0rylol.vector_stores.lancedb.settings') as mock_settings, \
+             patch('mem0rylol.vector_stores.lancedb.os') as mock_os:
+            mock_settings.LANCEDB_CONNECTION_STRING = "./local_data"
+            vector_store = MemoryVectorStore(Mock())
+            mock_os.makedirs.assert_called_once_with("./local_data", exist_ok=True)
+            assert vector_store.connection == mock_connection
+
+def test_lancedb_schemas():
+    # Test LanceDBSchema
+    schema = LanceDBSchema(id="1", text="Test text", embedding=[0.1, 0.2, 0.3])
+    assert schema.id == "1"
+    assert schema.text == "Test text"
+    assert schema.embedding == [0.1, 0.2, 0.3]
+    
+    # Test to_vector_store_schema method
+    vector_store_schema = schema.to_vector_store_schema()
+    assert isinstance(vector_store_schema, dict)
+    assert vector_store_schema['id'] == "1"
+    assert vector_store_schema['text'] == "Test text"
+    assert vector_store_schema['embedding'] == [0.1, 0.2, 0.3]
+
+    # Test LanceDBDocument
+    doc = LanceDBDocument(id="2", text="Another test", embedding=[0.4, 0.5, 0.6], metadata={"key": "value"})
+    assert doc.id == "2"
+    assert doc.text == "Another test"
+    assert doc.embedding == [0.4, 0.5, 0.6]
+    assert doc.metadata == {"key": "value"}
+    
+    # Test page_content property
+    assert doc.page_content == "Another test"
+
+    # Test LanceDBDocument without metadata
+    doc_without_metadata = LanceDBDocument(id="3", text="No metadata", embedding=[0.7, 0.8, 0.9])
+    assert doc_without_metadata.id == "3"
+    assert doc_without_metadata.text == "No metadata"
+    assert doc_without_metadata.embedding == [0.7, 0.8, 0.9]
+    assert doc_without_metadata.metadata is None
+
+    # Test LanceDBSchema model_config
+    assert LanceDBSchema.model_config['arbitrary_types_allowed'] == True
+
+    # Test LanceDBDocument.from_vector_store_schema method
+    vector_store_doc = {
+        'id': '4',
+        'text': 'Test from_vector_store_schema',
+        'embedding': [0.1, 0.2, 0.3],
+        'metadata': {'key': 'value'}
+    }
+    reconstructed_doc = LanceDBDocument.from_vector_store_schema(vector_store_doc)
+    assert isinstance(reconstructed_doc, LanceDBDocument)
+    assert reconstructed_doc.id == "4"
+    assert reconstructed_doc.text == "Test from_vector_store_schema"
+    assert reconstructed_doc.embedding == [0.1, 0.2, 0.3]
+    assert reconstructed_doc.metadata == {"key": "value"}
+
+    # Test LanceDBDocument.from_vector_store_schema method without metadata
+    vector_store_doc_without_metadata = {
+        'id': '5',
+        'text': 'No metadata',
+        'embedding': [0.4, 0.5, 0.6]
+    }
+    reconstructed_doc_without_metadata = LanceDBDocument.from_vector_store_schema(vector_store_doc_without_metadata)
+    assert isinstance(reconstructed_doc_without_metadata, LanceDBDocument)
+    assert reconstructed_doc_without_metadata.id == "5"
+    assert reconstructed_doc_without_metadata.text == "No metadata"
+    assert reconstructed_doc_without_metadata.embedding == [0.4, 0.5, 0.6]
+    assert reconstructed_doc_without_metadata.metadata is None

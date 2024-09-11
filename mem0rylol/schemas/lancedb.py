@@ -15,7 +15,7 @@ class LanceDBSchema(BaseSchema, LanceModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def to_vector_store_schema(self):
-        return self.dict()
+        return self.model_dump()
 
 class LanceDBDocument(BaseModel):
     id: str
@@ -27,26 +27,11 @@ class LanceDBDocument(BaseModel):
     def page_content(self) -> str:
         return self.text
 
-def test_lancedb_schemas():
-    # Test LanceDBSchema
-    schema = LanceDBSchema(id="1", text="Test text", embedding=[0.1, 0.2, 0.3])
-    assert schema.id == "1"
-    assert schema.text == "Test text"
-    assert schema.embedding == [0.1, 0.2, 0.3]
-    
-    # Test to_vector_store_schema method (line 18)
-    vector_store_schema = schema.to_vector_store_schema()
-    assert isinstance(vector_store_schema, dict)
-    assert vector_store_schema['id'] == "1"
-    assert vector_store_schema['text'] == "Test text"
-    assert vector_store_schema['embedding'] == [0.1, 0.2, 0.3]
-
-    # Test LanceDBDocument
-    doc = LanceDBDocument(id="2", text="Another test", embedding=[0.4, 0.5, 0.6], metadata={"key": "value"})
-    assert doc.id == "2"
-    assert doc.text == "Another test"
-    assert doc.embedding == [0.4, 0.5, 0.6]
-    assert doc.metadata == {"key": "value"}
-    
-    # Test page_content property (line 28)
-    assert doc.page_content == "Another test"
+    @classmethod
+    def from_vector_store_schema(cls, data: dict) -> 'LanceDBDocument':
+        return cls(
+            id=data['id'],
+            text=data['text'],
+            embedding=data['embedding'],
+            metadata=data.get('metadata')
+        )
