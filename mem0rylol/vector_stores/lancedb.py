@@ -7,6 +7,7 @@ from langchain_community.vectorstores import LanceDB
 
 from mem0rylol.base.vector_stores import BaseVectorStore
 from mem0rylol.config import settings
+from typing import List
 
 
 class MemoryVectorStore(BaseVectorStore):
@@ -36,3 +37,6 @@ class MemoryVectorStore(BaseVectorStore):
         docs = table.search(query_embedding).limit(fetch_k).to_pydantic()
         # Implement MMR logic here
         return [Document(page_content=doc.text, metadata={"id": doc.id}) for doc in docs[:k]]
+
+    def delete(self, table, ids: List[str]):
+        table.delete(where=f"id in {ids}")

@@ -6,6 +6,8 @@ MemoryManager
 
 .. autoclass:: mem0rylol.memory.memory_manager.MemoryManager
    :members:
+   :undoc-members:
+   :show-inheritance:
 
 Memory
 ------

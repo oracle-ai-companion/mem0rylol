@@ -22,3 +22,7 @@ class BaseVectorStore(ABC):
         self, table, query: str, k: int = 4, fetch_k: int = 20
     ) -> List[Document]:
         raise NotImplementedError("Subclasses must implement max_marginal_relevance_search method.")
+
+    @abstractmethod
+    def delete(self, table, ids: List[str]):
+        raise NotImplementedError("Subclasses must implement delete method.")

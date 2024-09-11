@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Type, Dict, Tuple, Any
 from unittest.mock import MagicMock, Mock, patch
 
 import lancedb
@@ -67,14 +67,17 @@ def test_add_memory(memory_manager, mock_vector_store):
 
 
 def test_similarity_search(memory_manager, mock_vector_store):
-    mock_docs = [Document(page_content="Paris is the capital of France", metadata={"id": "1"})]
-    mock_vector_store.similarity_search.return_value = mock_docs
+    mock_docs = [(Document(page_content="Paris is the capital of France", metadata={"id": "1"}), 0.9)]
+    mock_vector_store.similarity_search_with_score.return_value = mock_docs
 
     result = memory_manager.similarity_search("What is the capital of France?")
     assert isinstance(result, list)
     assert len(result) > 0
-    assert isinstance(result[0], Document)
-    assert result[0].page_content == "Paris is the capital of France"
+    assert isinstance(result[0], tuple)
+    assert isinstance(result[0][0], Document)
+    assert isinstance(result[0][1], float)
+    assert result[0][0].page_content == "Paris is the capital of France"
+    assert result[0][1] == 0.9
 
 
 def test_max_marginal_relevance_search(memory_manager, mock_vector_store):
@@ -255,6 +258,9 @@ def test_base_vector_store():
         ) -> List[Document]:
             return [Document(page_content="Test document")]
 
+        def delete(self, table, ids: List[str]):
+            pass
+
     vector_store = TestVectorStore()
     assert vector_store.create_table("test", {}) == "Test table"
     vector_store.insert_data("test_table", "test_data")
@@ -273,6 +279,32 @@ def test_base_vector_store():
         BaseVectorStore.similarity_search(None, "test", "query")
     with pytest.raises(NotImplementedError):
         BaseVectorStore.max_marginal_relevance_search(None, "test", "query")
+
+
+def test_base_vector_store_delete():
+    class TestVectorStore(BaseVectorStore):
+        def create_table(self, table_name: str, schema: dict):
+            return "Test table"
+
+        def insert_data(self, table, data):
+            pass
+
+        def similarity_search(self, table, query: str, k: int = 4) -> List[Document]:
+            return [Document(page_content="Test document")]
+
+        def max_marginal_relevance_search(
+            self, table, query: str, k: int = 4, fetch_k: int = 20
+        ) -> List[Document]:
+            return [Document(page_content="Test document")]
+
+        def delete(self, table, ids: List[str]):
+            pass
+
+    vector_store = TestVectorStore()
+    vector_store.delete("test_table", ["1", "2"])
+
+    with pytest.raises(NotImplementedError):
+        BaseVectorStore.delete(None, "test_table", ["1", "2"])
 
 
 def test_memory_vector_store_connection():
@@ -361,3 +393,58 @@ def test_lancedb_schemas():
     assert reconstructed_doc_without_metadata.text == "No metadata"
     assert reconstructed_doc_without_metadata.embedding == [0.4, 0.5, 0.6]
     assert reconstructed_doc_without_metadata.metadata is None
+
+
+def test_memory_vector_store_delete():
+    with patch("mem0rylol.vector_stores.lancedb.lancedb") as mock_lancedb:
+        mock_connection = Mock()
+        mock_table = Mock()
+        mock_connection.create_table.return_value = mock_table
+        mock_lancedb.connect.return_value = mock_connection
+
+        mock_embeddings = Mock()
+        vector_store = MemoryVectorStore(mock_embeddings)
+
+        # Test delete
+        vector_store.delete(mock_table, ["1", "2"])
+        mock_table.delete.assert_called_once_with(where="id in ['1', '2']")
+
+
+def test_extract_memories(memory_manager, mock_llm):
+    mock_llm.return_value = "- Likes pizza\n- Lives in New York\n- Works as a software engineer"
+    
+    memories = memory_manager.extract_memories("John is a software engineer living in New York who loves pizza.", {})
+    
+    assert len(memories) == 3
+    assert all(isinstance(m, Memory) for m in memories)
+    assert "pizza" in memories[0].text
+    assert "New York" in memories[1].text
+    assert "software engineer" in memories[2].text
+
+
+def test_update_memories(memory_manager, mock_llm, mock_vector_store):
+    new_memory = Memory(text="Likes pasta")
+    similar_memories = [
+        (Document(page_content="Likes pizza", metadata={"id": "1"}), 0.8),
+        (Document(page_content="Enjoys Italian food", metadata={"id": "2"}), 0.6),
+    ]
+    mock_llm.return_value = "- Prefers pasta over pizza\n- Enjoys Italian food"
+    
+    updated_memories = memory_manager.update_memories(new_memory, similar_memories)
+    
+    assert len(updated_memories) == 2
+    assert "pasta" in updated_memories[0].text
+    assert "Italian food" in updated_memories[1].text
+    mock_vector_store.insert_data.assert_called()
+    mock_vector_store.delete.assert_called()
+
+
+def test_generate_response(memory_manager, mock_llm):
+    mock_llm.return_value = "Based on the memories, John is a software engineer who lives in New York and enjoys Italian cuisine, particularly pasta."
+    
+    response = memory_manager.generate_response("What do we know about John?")
+    
+    assert "software engineer" in response
+    assert "New York" in response
+    assert "Italian cuisine" in response
+    assert "pasta" in response

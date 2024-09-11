@@ -42,17 +42,25 @@ Here's a simple example to get you started:
 
 .. code-block:: python
 
-   from mem0rylol import MemoryLayer
+   from mem0rylol import MemoryManager
+   from mem0rylol.memory.memory_types import Memory
+   from mem0rylol.schemas.lancedb import LanceDBSchema
 
-   # Initialize the memory layer
-   memory = MemoryLayer()
+   # Initialize the memory manager
+   memory_manager = MemoryManager(table_name="my_memories", schema_cls=LanceDBSchema)
 
-   # Store information
-   memory.store("The capital of France is Paris.")
+   # Extract and store memories
+   new_memories = memory_manager.extract_memories("John is a software engineer living in New York who loves pizza.", {})
+   for memory in new_memories:
+       memory_manager.add_memory(memory)
 
-   # Retrieve information
-   result = memory.retrieve("What is the capital of France?")
-   print(result)
+   # Retrieve and update memories
+   similar_memories = memory_manager.similarity_search("John's food preferences")
+   updated_memories = memory_manager.update_memories(Memory(text="John now prefers pasta"), similar_memories)
+
+   # Generate a response based on memories
+   response = memory_manager.generate_response("What do we know about John?")
+   print(response)
 
 Documentation
 -------------
