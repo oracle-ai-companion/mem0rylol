@@ -5,7 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
+# ... existing entries ...
 
+# Ignore .pypirc file
+.pypirc
 # Distribution / packaging
 .Python
 build/
