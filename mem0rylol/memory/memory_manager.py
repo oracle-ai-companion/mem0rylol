@@ -6,6 +6,7 @@ from mem0rylol.config import settings
 from mem0rylol.base.vector_stores import BaseVectorStore
 from mem0rylol.schemas.base import BaseSchema
 from mem0rylol.memory.memory_types import Memory
+import uuid
 
 class MemoryManager:
     """
@@ -33,7 +34,9 @@ class MemoryManager:
         @brief Add a memory to the memory vector store.
         @param memory The Memory object to add.
         """
-        self.vector_store.insert_data(self.table, memory.dict())
+        embedding = self.embeddings.embed_documents([memory.text])[0]
+        data = self.schema_cls(id=str(uuid.uuid4()), text=memory.text, embedding=embedding)
+        self.vector_store.insert_data(self.table, data)
 
     def similarity_search(self, query: str, k: int = 4) -> List[Document]:
         """

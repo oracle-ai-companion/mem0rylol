@@ -1,4 +1,4 @@
 [default]
+lancedb_connection_string = "./test_lancedb_data"
 google_genai_api_key = "AIzaSyB5nMSeC07pvNtcEjMo0LQUBSVvIA0hsno"
-lancedb_connection_string = "./lancedb_data"
 cerebras_api_key = "csk-yy4cttty9wnj84hfejr435ywm9rwyp26ywe4c4pv44fvdd36"

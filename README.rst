@@ -2,7 +2,7 @@
 mem0rylol: The Sophisticated AI Memory Layer
 ===============================================
 
-.. image:: https://img.shields.io/badge/version-0.1.0-blue.svg
+.. image:: https://img.shields.io/badge/version-0.2.0-blue.svg
    :target: https://pypi.org/project/mem0rylol/
    :alt: Version
 

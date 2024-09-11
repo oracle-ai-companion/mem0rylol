@@ -1,0 +1,11 @@
+[default]
+debug = false
+log_level = "INFO"
+max_memory_size = 1000
+lancedb_connection_string = "./lancedb_data"
+[development]
+debug = true
+log_level = "DEBUG"
+
+[production]
+log_level = "WARNING"

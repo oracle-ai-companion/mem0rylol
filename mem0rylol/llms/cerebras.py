@@ -1,16 +1,17 @@
-from src.base.llms import BaseLLM
+from mem0rylol.base.llms import BaseLLM
+from typing import List, Optional
+from langchain_cerebras import ChatCerebras
+from langchain.schema import LLMResult
 
 class CerebrasLLM(BaseLLM):
-    def __init__(self, model_name: str, callback_manager: Optional[CallbackManager] = None):
+    def __init__(self, model_name: str):
         """
         Initialize the CerebrasLLM.
 
         @param model_name The name of the Cerebras model to use.
-        @param callback_manager Optional CallbackManager to use for callbacks during LLM calls.
         """
         self.model_name = model_name
-        self.callback_manager = callback_manager
-        self.llm = ChatCerebras(model=model_name, callback_manager=callback_manager)
+        self.llm = ChatCerebras(model=model_name)
 
     def __call__(self, prompt: str, stop: Optional[List[str]] = None) -> str:
         """

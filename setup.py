@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="mem0rylol",
-    version="0.1.2",  # Incremented version number
+    version="0.2.0",  # Incremented version number
     packages=find_packages(exclude=["tests*"]),
     install_requires=[
         "langchain>=0.2.16",
