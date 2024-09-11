@@ -1,5 +1,5 @@
 from lancedb.pydantic import LanceModel, Vector
-from src.schemas.base import BaseSchema
+from mem0rylol.schemas.base import BaseSchema
 
 class LanceDBSchema(BaseSchema, LanceModel):
     """

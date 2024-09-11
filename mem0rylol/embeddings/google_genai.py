@@ -1,4 +1,4 @@
-from src.base.embeddings import BaseEmbeddings
+from mem0rylol.base.embeddings import BaseEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 class GoogleGenAIEmbeddings(BaseEmbeddings):

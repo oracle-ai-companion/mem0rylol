@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "mem0rylol"
-version = "0.1.0"
+version = "0.1.2"
 description = "A sophisticated AI memory layer."
 authors = ["toeknee"]
 license = "GNU"
-readme = "README.md"
+readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
@@ -30,6 +30,22 @@ sphinx-autobuild = "^2024.9.3"
 pre-commit = "^3.8.0"
 twine = "^5.1.1"
 tox = "^4.18.1"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
+
+[tool.pytest.ini_options]
+addopts = "--cov=mem0rylol --cov-report=term-missing"
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]
